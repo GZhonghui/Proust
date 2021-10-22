@@ -1,35 +1,45 @@
-from PIL import Image, ImageFilter, ImageDraw, ImageFont
+from PIL import Image, ImageFilter, ImageDraw, ImageFont, ImageEnhance
 import sys, string, os
 
-backgroundColour = (255, 255, 255, 0)
+shadowBackgroundColour = (255, 255, 255, 0)
 shadowColour = (32, 32, 32, 255)
+shadowOffset = (36, 36)
+shadowBorder = 64
+shadowIterations = 32
 
-mainSize = 0.9
+mainSize = 0.94
 
-def makeShadow(image, iterations, border, offset):
-  fullWidth  = image.size[0] + abs(offset[0]) + 2*border
-  fullHeight = image.size[1] + abs(offset[1]) + 2*border
-  
-  shadow = Image.new(image.mode, (fullWidth, fullHeight), backgroundColour)
-  
-  
-  shadowLeft = border + max(offset[0], 0) #if <0, push the rest of the image right
-  shadowTop  = border + max(offset[1], 0) #if <0, push the rest of the image down
-  #Paste in the constant colour
-  shadow.paste(shadowColour, 
-        [shadowLeft, shadowTop,
-         shadowLeft + image.size[0],
-         shadowTop  + image.size[1] ])
-  
-  # Apply the BLUR filter repeatedly
-  for i in range(iterations):
+finalSize = (800, 1200)
+
+fontRatio = 0.24
+Ratio = (3 - fontRatio) / 2
+
+textHeight = int(finalSize[1] * fontRatio / 3)
+finalSizeWithoutText = (finalSize[0], finalSize[1] - textHeight)
+
+def expandImage(width, height, ratio):
+  size_1 = (width, int(width * ratio))
+  size_2 = (int(height / ratio), height)
+  return [max(size_1[0],size_2[0]), max(size_1[1],size_2[1])]
+
+def makeShadow(image):
+  fullWidth  = image.size[0] + abs(shadowOffset[0]) + 2*shadowBorder
+  fullHeight = image.size[1] + abs(shadowOffset[1]) + 2*shadowBorder
+  shadow = Image.new(image.mode, (fullWidth, fullHeight), shadowBackgroundColour)
+  shadowL = shadowBorder + max(shadowOffset[0], 0)
+  shadowT = shadowBorder + max(shadowOffset[1], 0)
+  shadow.paste(shadowColour,[shadowL, shadowT, shadowL+image.size[0], shadowT+image.size[1]])
+  for i in range(shadowIterations):
     shadow = shadow.filter(ImageFilter.BLUR)
-
-  # Paste the original image on top of the shadow 
-  imgLeft = border - min(offset[0], 0) #if the shadow offset was <0, push right
-  imgTop  = border - min(offset[1], 0) #if the shadow offset was <0, push down
-  shadow.paste(image, (imgLeft, imgTop))
-
+  imgLeft = shadowBorder - min(shadowOffset[0], 0)
+  imgTop  = shadowBorder - min(shadowOffset[1], 0)
+  shadowData = shadow.load()
+  for i in range(fullWidth):
+    for j in range(fullHeight):
+      pixel = list(shadowData[i,j])
+      pixel[3] = 255 - pixel[0]
+      shadowData[i,j] = tuple(pixel)
+  shadow.paste(image, (imgLeft, imgTop), image)
   return shadow
 
 def circleCorner(image, R):
@@ -49,46 +59,40 @@ def circleCorner(image, R):
   return image.resize((image.size[0]//4, image.size[1]//4), Image.ANTIALIAS)
 
 def blurBackground(image):
-  return image.filter(ImageFilter.GaussianBlur(8))
+  return image.filter(ImageFilter.GaussianBlur(12))
 
 def addText(image, Text):
-  # 背景尺寸
-  bg_size = (750, 1334)
-  # 生成一张尺寸为 750x1334 背景色为黄色的图片
-  bg = Image.new('RGB', bg_size, color=(255,255,0))
-
-  # 字体大小
-  font_size = 72
-  # 文字内容
-  text = '《肖申克的救赎》'
-
-  # 字体文件路径
-  font_path = os.path.join('.', '云书法家杨永志瘦金正楷简.ttf')
-  # 设置字体
+  font_size = 64
+  font_path = os.path.join('.', 'Assets', '云书法家杨永志瘦金正楷简.ttf')
   font = ImageFont.truetype(font_path, font_size)
-  # 计算使用该字体占据的空间
-  # 返回一个 tuple (width, height)
-  # 分别代表这行字占据的宽和高
-  text_width = font.getsize(text)
-  draw = ImageDraw.Draw(bg)
-
-  # 计算字体位置
-  text_coordinate = int((bg_size[0]-text_width[0])/2), int((bg_size[1]-text_width[1])/2)+300
-  # 写字
-  draw.text(text_coordinate, text,(0,0,0), font=font)
-
-  bg.show()
+  text_size = font.getsize(Text)
+  draw = ImageDraw.Draw(image)
+  text_coordinate = (image.size[0]-text_size[0])//2, image.size[1]-text_size[1]-16
+  draw.text(text_coordinate, Text,(0,0,0), font=font)
   
 def main():
   image = Image.open(sys.argv[1])
-  image = image.convert("RGBA")
-
-  cir = circleCorner(image, 12)
-  targetSize = (int(image.size[0]*1.4), int(image.size[1]*1.4))
-  #bg = blurBackground(image).resize(targetSize, Image.ANTIALIAS)
-  bg = image.resize(targetSize, Image.ANTIALIAS)
-  bg.paste(cir, (10,10))
-  bg.show()
+  circle = circleCorner(image, 16)
+  #shadow = makeShadow(circle)
+  shadow = circle
+  backgroundSize = expandImage(image.size[0],image.size[1], Ratio)
+  backgroundSize[0] = (int(backgroundSize[0] / mainSize) - image.size[0])//2*2 + image.size[0]
+  backgroundSize[1] = (int(backgroundSize[1] / mainSize) - image.size[1])//2*2 + image.size[1]
+  pasteLocation = ((backgroundSize[0]-image.size[0])//2-shadowBorder,(backgroundSize[1]-image.size[1])//2-shadowBorder)
+  imageTargetSize = expandImage(backgroundSize[0], backgroundSize[1], image.size[1]/image.size[0])
+  backImage = image.resize(imageTargetSize, Image.ANTIALIAS)
+  enhancer = ImageEnhance.Brightness(backImage)
+  backImage = enhancer.enhance(1.5)
+  background = Image.new('RGB', backgroundSize, color=(255,255,255))
+  background.paste(backImage,(0,0))
+  background = blurBackground(background)
+  background.paste(shadow, pasteLocation, shadow)
+  background = background.resize(finalSizeWithoutText, Image.ANTIALIAS)
+  backgroundText = Image.new('RGB', finalSize, color=(255,255,255))
+  backgroundText.paste(background,(0,0))
+  addText(backgroundText,sys.argv[2])
+  backgroundText.show()
+  backgroundText.save('02.png')
 
 if __name__ == "__main__":
   main()
