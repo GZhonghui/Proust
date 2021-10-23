@@ -109,8 +109,16 @@ def addText(image, Text):
   textCoordinate = (image.size[0]-textSize[0])//2, image.size[1]-textSize[1]-textBelow
   Draw.text(textCoordinate, Text, (255,255,255), font=Font)
   
-def main():
-  image = Image.open(sys.argv[1])
+procCnt = 0
+def Proc(fileName,Text=None):
+  if not len(fileName):
+    return
+  global procCnt
+  procCnt += 1
+  print('[%03d] Procing :'%procCnt,fileName)
+  Text = fileName if Text is None else Text
+  fileName = fileName + '.png'
+  image = Image.open(fileName)
   Circle = circleCorner(image, circleCornerSize)
   Shadow = makeShadow(Circle)
   backgroundSize = expandImage(image.size[0],image.size[1], Ratio)
@@ -131,9 +139,63 @@ def main():
   background = background.resize(finalSizeWithoutText, Image.ANTIALIAS)
   backgroundText = Image.new('RGB', finalSize, color=(0,0,0))
   backgroundText.paste(background,(0,0))
-  addText(backgroundText,sys.argv[2])
-  backgroundText.show()
-  backgroundText.save('./Output/'+sys.argv[1])
+  addText(backgroundText,Text)
+  backgroundText.save('P01_'+fileName)
+
+def main():
+  '''
+  Proc('')
+  Proc('方根胶卷')
+  Proc('方根书简')
+  Proc('82年生的金智英')
+  Proc('白夜行')
+  Proc('菜穗子')
+  Proc('霍乱时期的爱情')
+  Proc('巨龙的黄昏')
+  Proc('巨龙的黎明')
+  Proc('看见')
+  Proc('情书')
+  Proc('人间失格')
+  Proc('伤心咖啡馆之歌')
+  Proc('失乐园')
+  Proc('苏菲的世界')
+  Proc('雪国')
+  Proc('伊豆的舞女')
+  Proc('战争之潮')
+  Proc('追风筝的人')
+  Proc('追忆似水年华')
+  Proc('灿烂千阳')
+  Proc('房思琪的初恋乐园')
+  Proc('目送')
+  Proc('起风了')
+  Proc('旋涡')
+  Proc('远山淡影')
+  Proc('长安十二时辰 上','长安十二时辰 (上)')
+  Proc('长安十二时辰 下','长安十二时辰 (下)')
+  Proc('阿丽塔 战斗天使','阿丽塔:战斗天使')
+  Proc('大话西游之大圣娶亲')
+  Proc('垫底辣妹')
+  Proc('东京日和')
+  Proc('红辣椒')
+  Proc('情书')
+  Proc('这个杀手不太冷')
+  Proc('非自然死亡')
+  Proc('干物妹 小埋','干物妹!小埋')
+  Proc('秘密森林')
+  Proc('请回答 1988')
+  Proc('权力的游戏')
+  Proc('秘密森林2','秘密森林 (二)')
+  Proc('权力的游戏2','权力的游戏 (二)')
+  Proc('仙剑奇侠传 第三季','仙剑奇侠传 (三)')
+  Proc('GRIS')
+  Proc('对马岛之鬼')
+  Proc('绯红结系')
+  Proc('极限竞速 地平线4','极限竞速:地平线4')
+  Proc('凯瑟琳 Full Body')
+  Proc('女神异闻录5 皇家版')
+  Proc('塞尔达传说 荒野之息','塞尔达传说:荒野之息')
+  Proc('异度之刃2')
+  ''' 
 
 if __name__ == "__main__":
   main()
