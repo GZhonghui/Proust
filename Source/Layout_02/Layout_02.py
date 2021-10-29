@@ -25,7 +25,7 @@ shadowOffset = (24, 24)
 shadowBorder = 32
 shadowIterations = 48
 
-blurRadious = 13
+blurRadious = 9
 
 circleCornerSize = 16
 
@@ -115,8 +115,8 @@ def Proc(fileName,Text=None):
     return
   global procCnt
   procCnt += 1
-  print('[%03d] Procing :'%procCnt,fileName)
   Text = fileName if Text is None else Text
+  print('[%03d] Procing :'%procCnt,fileName,'[%s]'%Text)
   fileName = fileName + '.png'
   image = Image.open(fileName)
   Circle = circleCorner(image, circleCornerSize)
@@ -140,14 +140,64 @@ def Proc(fileName,Text=None):
   backgroundText = Image.new('RGB', finalSize, color=(0,0,0))
   backgroundText.paste(background,(0,0))
   addText(backgroundText,Text)
-  backgroundText.save('P01_'+fileName)
+  backgroundText.save('P02_'+fileName)
 
 def main():
   '''
   Proc('')
-  ''' 
 
-  Proc('风来之国')
+  Proc('82年生的金智英') # 0001
+  Proc('GRIS')
+  Proc('东京日和')
+  Proc('人间失格')
+  Proc('人间有味')
+  Proc('仙剑奇侠传 第三季','仙剑奇侠传 (三)')
+  Proc('伊豆的舞女')
+  Proc('伤心咖啡馆之歌')
+  Proc('作为意志和表象的世界')
+  Proc('你的名字')
+  Proc('凯瑟琳 Full Body')
+  Proc('千与千寻 新','千与千寻')
+  Proc('只狼 影逝二度')
+  Proc('垫底辣妹')
+  Proc('塞尔达传说 荒野之息','塞尔达传说:荒野之息')
+  Proc('失乐园')
+  Proc('女神异闻录5 皇家版')
+  Proc('对马岛之鬼')
+  Proc('小森林 冬春篇')
+  Proc('小森林 夏秋篇')
+  Proc('小森林')
+  Proc('情书 (书籍)','情书')
+  Proc('情书 (电影)','情书')
+  Proc('房思琪的初恋乐园')
+  Proc('新战神')
+  Proc('旋涡')
+  Proc('星际穿越')
+  Proc('权力的游戏')
+  Proc('权力的游戏2', '权力的游戏 (二)')
+  Proc('权力的游戏3', '权力的游戏 (三)')
+  Proc('极限竞速 地平线4','极限竞速:地平线4')
+  Proc('梦与狂想的王国')
+  Proc('灿烂千阳')
+  Proc('白夜行')
+  Proc('白鹿原')
+  Proc('看见')
+  Proc('破晓传说')
+  Proc('秘密森林')
+  Proc('秘密森林2', '秘密森林 (二)')
+  Proc('红辣椒')
+  Proc('绯红结系')
+  Proc('艾希 B', '艾希')
+  Proc('苏菲的世界')
+  Proc('菜穗子')
+  Proc('请回答 1988')
+  Proc('起风了')
+  Proc('这个杀手不太冷')
+  Proc('追忆似水年华')
+  Proc('追风筝的人')
+  Proc('雪国') # 0050
+
+  ''' 
 
 if __name__ == "__main__":
   main()
