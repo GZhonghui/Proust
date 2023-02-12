@@ -1,4 +1,4 @@
 # Proust
-> [À la recherche du temps perdu](http://wiki.gzher.com/Library/Index.html)
+> [À la recherche du temps perdu](https://lib.gzher.com/)
 
 ![Proust](readMe/Proust.png)
